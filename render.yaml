@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: store-locator-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: alembic upgrade head && gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:$PORT
+    autoDeploy: true
+    envVars:
+      - key: APP_NAME
+        value: Store Locator Service
+      - key: APP_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "15"
+      - key: REFRESH_TOKEN_EXPIRE_DAYS
+        value: "7"
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: GEOCODING_PROVIDER
+        value: nominatim
+      # Set DATABASE_URL and REDIS_URL in Render dashboard.

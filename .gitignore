@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual env
+.venv/
+venv/
+
+# Environment files
+.env
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
+
+# SQLite (if any local leftovers)
+*.db
