@@ -136,12 +136,8 @@ This repository includes `render.yaml` for the web service.
    - `REFRESH_TOKEN_EXPIRE_DAYS=7`
    - `CORS_ORIGINS=*` (or your frontend domain)
 5. Deploy. Start command runs migrations automatically:
-   - `alembic upgrade head && gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:$PORT`
-6. After first deploy, run one-time seed in Render shell:
-
-```bash
-python -m scripts.seed_data
-```
+   - `alembic upgrade head && python -m scripts.seed_data && gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:$PORT`
+6. Seed users are handled automatically in start command (idempotent).
 
 7. Import store CSV using deployed API endpoint:
    - `POST /api/admin/stores/import`
@@ -152,6 +148,17 @@ python -m scripts.seed_data
 - `GET /health` returns status ok
 - `GET /docs` is accessible
 - Login + search + admin import work on production URL
+
+### Live Deployment
+
+- Base URL: `https://store-locator-api-cil1.onrender.com`
+- Health: `https://store-locator-api-cil1.onrender.com/health`
+- Docs: `https://store-locator-api-cil1.onrender.com/docs`
+- 1000-store import result:
+  - `total_rows: 1000`
+  - `created: 950`
+  - `updated: 50`
+  - `failed: []`
 
 ## Default Seed Users
 
@@ -168,5 +175,6 @@ pytest -q --cov=app --cov-report=term-missing
 ## API Docs
 
 - Swagger UI: `http://localhost:8000/docs`
+- Production Swagger UI: `https://store-locator-api-cil1.onrender.com/docs`
 - Architecture doc: `docs/ARCHITECTURE.md`
 - Schema doc: `docs/SCHEMA.md`

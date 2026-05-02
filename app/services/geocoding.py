@@ -31,10 +31,15 @@ class GeocodingService:
         url = "https://nominatim.openstreetmap.org/search"
         params = {"q": query, "format": "json", "limit": 1}
         headers = {"User-Agent": "store-locator-app"}
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            response = await client.get(url, params=params, headers=headers)
-            response.raise_for_status()
-            data: list[dict[str, Any]] = response.json()
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.get(url, params=params, headers=headers)
+                response.raise_for_status()
+                data: list[dict[str, Any]] = response.json()
+        except httpx.HTTPStatusError as exc:
+            raise ValueError(f"Geocoding provider returned HTTP {exc.response.status_code}") from exc
+        except httpx.HTTPError as exc:
+            raise ValueError("Geocoding provider request failed") from exc
 
         if not data:
             raise ValueError("Location not found")

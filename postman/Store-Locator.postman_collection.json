@@ -1,0 +1,372 @@
+{
+  "info": {
+    "_postman_id": "9c1f2faf-9476-46d0-93cf-bc9ddda5ca83",
+    "name": "Store Locator API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/health",
+          "host": ["{{base_url}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (JSON, admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{default_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.environment.set('access_token', json.access_token);",
+                  "pm.environment.set('refresh_token', json.refresh_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "OAuth Token (form, admin)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "username", "value": "{{admin_email}}", "type": "text" },
+                { "key": "password", "value": "{{default_password}}", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/token",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "token"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.environment.set('access_token', json.access_token);",
+                  "pm.environment.set('refresh_token', json.refresh_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "logout"]
+            }
+          }
+        },
+        {
+          "name": "Negative - Login Wrong Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"wrong-password\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public Search",
+      "item": [
+        {
+          "name": "Search by Coordinates",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": 42.3601,\n  \"longitude\": -71.0589,\n  \"radius_miles\": 10,\n  \"services\": [\"pickup\"],\n  \"store_types\": [\"regular\"],\n  \"open_now\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/stores/search",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stores", "search"]
+            }
+          }
+        },
+        {
+          "name": "Search by ZIP",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"postal_code\": \"02101\",\n  \"radius_miles\": 10\n}" },
+            "url": { "raw": "{{base_url}}/api/stores/search", "host": ["{{base_url}}"], "path": ["api", "stores", "search"] }
+          }
+        },
+        {
+          "name": "Search by Address",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"address\": \"1 Main St, Boston, MA\",\n  \"radius_miles\": 10\n}" },
+            "url": { "raw": "{{base_url}}/api/stores/search", "host": ["{{base_url}}"], "path": ["api", "stores", "search"] }
+          }
+        },
+        {
+          "name": "Search Combined Filters (radius + services AND + store_types OR)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": 42.3601,\n  \"longitude\": -71.0589,\n  \"radius_miles\": 10,\n  \"services\": [\"pickup\", \"pharmacy\"],\n  \"store_types\": [\"regular\", \"outlet\"],\n  \"open_now\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/stores/search",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stores", "search"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "var body = pm.response.json();",
+                  "var req = JSON.parse(pm.request.body.raw);",
+                  "var radius = req.radius_miles;",
+                  "var required = req.services || [];",
+                  "var allowedTypes = (req.store_types || []).map(function (t) { return String(t); });",
+                  "function normTypes(arr) {",
+                  "  return (arr || []).map(function (t) { return String(t); });",
+                  "}",
+                  "pm.test('Shape: total, filters, results', function () {",
+                  "  pm.expect(body).to.have.keys('total', 'filters', 'results', 'search_latitude', 'search_longitude');",
+                  "  pm.expect(body.total).to.eql(body.results.length);",
+                  "});",
+                  "pm.test('Filters echo request', function () {",
+                  "  pm.expect(body.filters.radius_miles).to.eql(radius);",
+                  "  pm.expect(body.filters.services).to.eql(required);",
+                  "  pm.expect(normTypes(body.filters.store_types)).to.eql(allowedTypes);",
+                  "  pm.expect(body.filters.open_now).to.eql(req.open_now);",
+                  "});",
+                  "pm.test('Each row satisfies combined rules', function () {",
+                  "  body.results.forEach(function (row) {",
+                  "    pm.expect(row.distance_miles, 'distance within radius').to.be.at.most(radius);",
+                  "    pm.expect(allowedTypes, 'store_type in OR list').to.include(String(row.store_type));",
+                  "    required.forEach(function (svc) {",
+                  "      pm.expect(row.services, 'service AND: ' + svc).to.include(svc);",
+                  "    });",
+                  "    if (req.open_now === true) {",
+                  "      pm.expect(row.is_open_now, 'open_now filter').to.be.true;",
+                  "    }",
+                  "  });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Negative - Missing Search Inputs",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"radius_miles\": 10\n}" },
+            "url": { "raw": "{{base_url}}/api/stores/search", "host": ["{{base_url}}"], "path": ["api", "stores", "search"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Stores (Bearer)",
+      "item": [
+        {
+          "name": "List Stores",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/api/admin/stores?page=1&size=5",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "stores"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "size", "value": "5" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Store (auto geocode)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"store_id\": \"{{store_id_demo}}\",\n  \"name\": \"Demo Store\",\n  \"store_type\": \"regular\",\n  \"status\": \"active\",\n  \"address_street\": \"1 Demo St\",\n  \"address_city\": \"Boston\",\n  \"address_state\": \"MA\",\n  \"address_postal_code\": \"02101\",\n  \"address_country\": \"USA\",\n  \"phone\": \"617-555-0211\",\n  \"services\": [\"pickup\"],\n  \"hours_mon\": \"08:00-20:00\",\n  \"hours_tue\": \"08:00-20:00\",\n  \"hours_wed\": \"08:00-20:00\",\n  \"hours_thu\": \"08:00-20:00\",\n  \"hours_fri\": \"08:00-20:00\",\n  \"hours_sat\": \"08:00-20:00\",\n  \"hours_sun\": \"08:00-20:00\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/admin/stores", "host": ["{{base_url}}"], "path": ["api", "admin", "stores"] }
+          }
+        },
+        {
+          "name": "Patch Store",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Demo Store Updated\",\n  \"services\": [\"pickup\", \"pharmacy\"]\n}" },
+            "url": { "raw": "{{base_url}}/api/admin/stores/{{store_id_demo}}", "host": ["{{base_url}}"], "path": ["api", "admin", "stores", "{{store_id_demo}}"] }
+          }
+        },
+        {
+          "name": "Delete Store (soft)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/stores/{{store_id_demo}}", "host": ["{{base_url}}"], "path": ["api", "admin", "stores", "{{store_id_demo}}"] }
+          }
+        },
+        {
+          "name": "Import CSV",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": { "raw": "{{base_url}}/api/admin/stores/import", "host": ["{{base_url}}"], "path": ["api", "admin", "stores", "import"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Users (Bearer)",
+      "item": [
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/api/admin/users", "host": ["{{base_url}}"], "path": ["api", "admin", "users"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "RBAC Demo (Viewer should fail)",
+      "item": [
+        {
+          "name": "Login Viewer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{viewer_email}}\",\n  \"password\": \"{{default_password}}\"\n}" },
+            "url": { "raw": "{{base_url}}/api/auth/login", "host": ["{{base_url}}"], "path": ["api", "auth", "login"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.environment.set('access_token', json.access_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Viewer tries Create Store (expect 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"store_id\": \"S9999\",\n  \"name\": \"Forbidden Store\",\n  \"store_type\": \"regular\",\n  \"status\": \"active\",\n  \"address_street\": \"1 Test St\",\n  \"address_city\": \"Boston\",\n  \"address_state\": \"MA\",\n  \"address_postal_code\": \"02101\",\n  \"address_country\": \"USA\",\n  \"phone\": \"617-555-9999\",\n  \"services\": [\"pickup\"],\n  \"hours_mon\": \"08:00-20:00\",\n  \"hours_tue\": \"08:00-20:00\",\n  \"hours_wed\": \"08:00-20:00\",\n  \"hours_thu\": \"08:00-20:00\",\n  \"hours_fri\": \"08:00-20:00\",\n  \"hours_sat\": \"08:00-20:00\",\n  \"hours_sun\": \"08:00-20:00\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/admin/stores", "host": ["{{base_url}}"], "path": ["api", "admin", "stores"] }
+          }
+        }
+      ]
+    }
+  ]
+}

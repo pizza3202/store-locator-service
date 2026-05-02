@@ -62,9 +62,15 @@ def _store_to_response(store: Store) -> StoreResponse:
 @limiter.limit("100/hour")
 async def search_stores(request: Request, payload: StoreSearchRequest, db: Session = Depends(get_db)):  # noqa: ARG001
     if payload.address:
-        search_lat, search_lon = await geocoding_service.geocode(payload.address)
+        try:
+            search_lat, search_lon = await geocoding_service.geocode(payload.address)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=f"Unable to geocode address: {exc}") from exc
     elif payload.postal_code:
-        search_lat, search_lon = await geocoding_service.geocode(payload.postal_code)
+        try:
+            search_lat, search_lon = await geocoding_service.geocode(f"{payload.postal_code}, USA")
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=f"Unable to geocode postal code: {exc}") from exc
     elif payload.latitude is not None and payload.longitude is not None:
         search_lat, search_lon = payload.latitude, payload.longitude
     else:
